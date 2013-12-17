@@ -11,7 +11,7 @@ def time2data(time):
 def data2time(data):
     return (data-25568)*86400-57600
 
-class sitradDB:
+class database:
     def __init__(self,dfile):
         self.db = sqlite3.connect(dfile)
         self.db.text_factory = bytes
