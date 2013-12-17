@@ -59,8 +59,8 @@ def main():
 		stime = sitrad.time2data(ttime)
 
 		""" Read the database """
+		d = {}
 		with getdb(config) as db:
-			d = {}
 			for table in db.tables():
 				if table=='empresa':
 					a,e = db.query(table)
@@ -96,10 +96,13 @@ def main():
 						dd = [dict(zip(a,q)) for q in e]
 						d[table] = dd
 						y = set([x[0] for x in e])
+						z = [config.check(table,x,False) for x in a]
 						for x in y:
 							config.check('Instrument {}'.format(x), 'type', table)
+							for i in range(len(a)):
+								if z[i]:
+									config.check(table,a[i],z[i])
 						config.xset(table,'instruments',','.join([str(x) for x in y]))
-						z = [config.check(table,x,False) for x in a]
 						print table,y,z
 			
 		""" Form the document """
