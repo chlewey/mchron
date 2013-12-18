@@ -7,6 +7,45 @@ from email.MIMEText import MIMEText
 from email.Utils import COMMASPACE, formatdate
 from email import Encoders
 
+mtypes = {
+	'cvs': ('text','cvs'),
+	'doc': ('application','msword'),
+	'docx': ('application','msword'),
+	'gif': ('image','gif'),
+	'htm': ('text','html'),
+	'html': ('text','html'),
+	'jpeg': ('image','jpeg'),
+	'jpg': ('image','jpeg'),
+	'js': ('application','javascript'),
+	'json': ('application','json'),
+	'pdf': ('application','pdf'),
+	'png': ('image','png'),
+	'xls': ('application','vnd.ms-excel'),
+	'xlsx': ('application','vnd.ms-excel'),
+}
+
+def mimebase(filename):
+	if filename.lower() in mtypes.keys():
+		ext = filename.lower()
+		return MIMEBase(mtypes[ext][0],mtypes[ext][1])
+	i = filename.rfind('.')
+	if i:
+		ext = filename[i+1:].lower()
+		if ext in mtypes.keys():
+			return MIMEBase(mtypes[ext][0],mtypes[ext][1])
+	return MIMEBase('application','octet-stream')
+
+def mimetype(filename):
+	if filename.lower() in mtypes.keys():
+		ext = filename.lower()
+		return "{}/{}".format(mtypes[ext][0],mtypes[ext][1])
+	i = filename.rfind('.')
+	if i:
+		ext = filename[i+1:].lower()
+		if ext in mtypes.keys():
+			return "{}/{}".format(mtypes[ext][0],mtypes[ext][1])
+	return 'application/octet-stream'
+
 def send(config,text,attch=[]):
 	assert type(attch)==list
 	
@@ -25,7 +64,7 @@ def send(config,text,attch=[]):
 	msg.attach(msgtext)
 	
 	for f in attch:
-		attfile = MIMEBase('application','pdf')
+		attfile = mimebase(f)
 		attfile.set_payload(open(f,'rb').read())
 		Encoders.encode_base64(attfile)
 		attfile.add_header('Content-Disposition', 'attachement; filename={}'.format(os.path.basename(f)))
