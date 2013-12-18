@@ -12,12 +12,12 @@ CONFIGFILE = 'mchron.cfg'
 
 def getdb(config):
 	section = 'Database'
-	maker = config.xget(section,'maker')
+	maker = config.xget(section,'maker','sitrad')
 	if maker is None:
 		raise 'No database maker provided'
 	if maker=='sitrad':
 		dbfile = config.xget(section,'source','datos.db')
-		path = config.xget(section,'path','.')
+		path = config.xget(section,'path','C:\\Documents and Settings\\All Users\\Application Data\\Full Gauge\\Sitrad')
 		if path not in ['.','']:
 			dbfile = path.rstrip('/')+'/'+dbfile
 		return sitrad.database(dbfile)
