@@ -1,0 +1,151 @@
+[Database]
+maker = sitrad
+path = .
+source = datos.db
+
+[Email]
+address = test@ewey.co;
+	chlewey@gmail.com;
+	test2@ewey.co;
+	invermeq@gmail.com;
+	luiskoko@yahoo.es;
+	l_ortiz_forero@hotmail.com
+from = emailer@orugaamarilla.com
+subject = Reporte de San Pedro (Elite Flower)
+server = mail.orugaamarilla.com
+fromname = Oruga Amarilla emailer
+
+[Report]
+title = Reporte de San Pedro (Elite Flower)
+namebase = report
+figures = Figure 2;
+	Figure 3;
+	Figure 4;
+	Figure 6;
+	Figure 7
+
+[Site]
+name = Finca San Pedro (Elite Flower)
+instrument-2 = Interior Bloque 8 San Pedro
+instrument-3 = EXTERIOR
+instrument-4 = Interior Bloque 12 San Pedro
+instrument-6 = Estado de operacion (BL 8)
+instrument-7 = Interior Bloque 16 San Pedro
+
+[Instrument 2]
+type = mt530super
+description = Interior Bloque 8 San Pedro
+status = 0
+date = Sat Aug 11 14:25:14 2012
+model = 36
+meters = temperature;
+	humidity
+alarms = Humedad ambiente baja;
+	Temperatura ambiente alta;
+	Humedad ambiente alta
+
+[Instrument 3]
+type = mt530super
+description = EXTERIOR
+status = 0
+date = Sat Aug 11 14:30:35 2012
+model = 53
+meters = temperature;
+	humidity
+alarms = Humedad ambiente baja;
+	Temperatura ambiente alta;
+	Humedad ambiente alta
+
+[Instrument 4]
+type = ahc80plus
+description = Interior Bloque 12 San Pedro
+status = 0
+date = Sat Nov 17 15:23:26 2012
+model = 14
+meters = humidity;
+	temp_dry;
+	temp_wet
+alarms = Temperatura del bulbo húmedo alta;
+	Temperatura del bulbo seco alta;
+	Humedad ambiente alta;
+	Temperatura del bulbo húmedo mayor que la del bulbo seco
+
+[Instrument 6]
+type = Trifasico
+description = Estado de operacion (BL 8)
+status = 0
+date = Fri Apr 26 13:47:10 2013
+model = 33
+meters = VoltR
+alarms = Error en la lectura de la Fase R
+
+[Instrument 7]
+type = mt530super
+description = Interior Bloque 16 San Pedro
+status = 0
+date = Tue Jul  9 14:48:53 2013
+model = 36
+meters = temperature;
+	humidity
+
+[ahc80plus]
+instruments = 4
+temp_dry = True
+temp_wet = True
+humidity = True
+st1 = False
+st2 = False
+time = False
+period = False
+id = False
+
+[Trifasico]
+instruments = 6
+voltr = True
+volts = False
+voltt = False
+out1 = False
+time = False
+period = False
+id = False
+
+[mt530super]
+instruments = 2,3,7
+temperature = True
+humidity = True
+therm = False
+humid = False
+aux = False
+buzz = False
+time = False
+period = False
+id = False
+
+[Figure 2]
+description = Interior Bloque 8 San Pedro
+meters = 002.temperature;
+	002.humidity
+
+[Figure 3]
+description = EXTERIOR
+meters = 003.temperature;
+	003.humidity
+
+[Figure 4]
+description = Interior Bloque 12 San Pedro
+meters = 004.humidity;
+	004.temp_dry;
+	004.temp_wet
+
+[Figure 6]
+description = Estado de operacion (BL 8)
+meters = 006.VoltR
+
+[Figure 7]
+description = Interior Bloque 16 San Pedro
+meters = 007.temperature;
+	007.humidity
+
+[Run]
+time = Wed Dec 18 02:41:48 2013
+

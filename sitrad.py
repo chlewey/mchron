@@ -1,5 +1,5 @@
 
-import sqlite3,debug,json
+import sqlite3,debug,json,time
 
 latest = 25568.0
 instrumentos = {}
@@ -10,6 +10,9 @@ def time2data(time):
 
 def data2time(data):
     return (data-25568)*86400-57600
+    
+def data2str(data):
+	return time.ctime(data2time(data))
 
 class database:
     def __init__(self,dfile):
@@ -27,8 +30,19 @@ class database:
         if x==b'1': return True
         if type(x)==type(b''): return x.decode('latin-1')
         return x
+        
+    def query(self,query,limit=1000):
+        tab = self.db.cursor()
+        try:
+            tab.execute(query)
+        except:
+            debug.err(query)
+            exit()
+        res = [[self.adjust(item) for item in row] for row in tab.fetchmany(limit)]
+        kis = [str(i[0]) for i in tab.description]
+        return (kis,res)
 
-    def query(self,table,limit=100,where=None,order=None,desc=False):
+    def select(self,table,limit=1000,where=None,order=None,desc=False):
         query = "SELECT * FROM "+table
         if where: query+= " WHERE "+where
         if order: query+= " ORDER BY "+order
@@ -44,7 +58,7 @@ class database:
         return (kis,res)
         
     def tables(self):
-        k,r = self.query('sqlite_master',where="type='table'")
+        k,r = self.select('sqlite_master',where="type='table'")
         return [i[1] for i in r]
 
     def getall(self):
@@ -53,16 +67,16 @@ class database:
         d = {}
         for table in self.tables():
             if table=='empresa':
-                a,e = self.query(table)
+                a,e = self.select(table)
                 d[table] = e[0][0]
             elif table=='modulo_io_cfg':
-                a,e = self.query(table)
+                a,e = self.select(table)
                 d[table] = [dict(zip(a,q)) for q in e]
             elif table=='instrumentos':
-                a,e = self.query(table)
+                a,e = self.select(table)
                 d[table] = dict([[q[0],translate(zip(a[1:],q[1:]))] for q in e])
             elif table=='rel_alarmes':
-                a,e = self.query(table,where="dataInicio>{0} OR dataFim>{0}".format(ll))
+                a,e = self.select(table,where="dataInicio>{0} OR dataFim>{0}".format(ll))
                 d[table] = [translate(zip(a,q)) for q in e]
                 if not len(e): continue
                 i = a.index('dataFim')
@@ -70,7 +84,7 @@ class database:
                 debug.out2('max alarmes',m)
                 if latest<m: latest = m
             else:
-                a,e = self.query(table,100,"data>{0}".format(ll),"data",True)
+                a,e = self.select(table,100,"data>{0}".format(ll),"data",True)
                 d[table+'*'] = a
                 d[table] = [translate(zip(a,q)) for q in e]
                 if not len(e): continue
@@ -167,7 +181,9 @@ def tuplist_json(x):
     return json.dumps(x)
 
 def decimate(v):
-    return v/10
+    if not v:
+        return 0
+    return v/10.0
 
 translations = {
     'temperatura':('temperature',decimate),
@@ -185,7 +201,7 @@ translations = {
     'estagio':('stage',None),
     'endereco':('address',None),
     'descricao':('description',None),
-    'datacad':('time_cad',data2time),
+    'datacad':('date',data2str),
     'alarme1L':('alarm1L',decimate),
     'alarme1H':('alarm1H',decimate),
     'alarme2L':('alarm2L',decimate),
@@ -198,9 +214,33 @@ translations = {
     'alarme5H':('alarm5H',decimate),
     'alarme6L':('alarm6L',decimate),
     'alarme6H':('alarm6H',decimate),
+    'voltr': ('volt_R',None),
+    'volts': ('volt_S',None),
+    'voltt': ('volt_T',None),
+    'modelo':('model',None),
+    'tipo':('type',None),
     }
+
+def translatev(k,v):
+	global translations
+	if k in translations.keys() and translations[k][1]:
+		return translations[k][1](v)
+	return v
+
 def translate(x):
     global translations,latest
+    if type(x)==type(''):
+        if x in translations.keys():
+            return translations[x][0]
+        return x
+    if type(x)==type((0,1)):
+        if x[0] in translations.keys():
+            y = translations[x[0]]
+            name = y[0]
+            if y[1]:
+                return (name,y[1](x[1]))
+            return (name,x[1])
+        return x
     r = []
     for a,b in x:
         if a in translations.keys():
