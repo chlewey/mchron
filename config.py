@@ -40,4 +40,3 @@ class mcConfig(ConfigParser.ConfigParser):
 			self.add_section(section)
 		self.set(section, option, value)
 		return False
-	

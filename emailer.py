@@ -46,6 +46,9 @@ def mimetype(filename):
 			return "{}/{}".format(mtypes[ext][0],mtypes[ext][1])
 	return 'application/octet-stream'
 
+def nsend(config,text,attch=[]):
+	print text
+
 def send(config,text,attch=[]):
 	assert type(attch)==list
 	
