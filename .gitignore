@@ -17,4 +17,5 @@ develop-eggs/
 .mr.developer.cfg
 *.db
 *.cfg
+*.cfg.*
 *.pdf
