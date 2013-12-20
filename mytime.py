@@ -1,9 +1,8 @@
 
-import locale,time
+import locale,time,config
 __lstack = []
 __mylocale = 'es_CO.utf8'
 __sit_dshift = 25568
-__sit_hshift = 16*3600
 __secday = 24*3600
 
 def __localein(l=__mylocale):
@@ -67,17 +66,19 @@ def data2fmt(ft,st):
 	return time2fmt(ft,data2time(st))
 
 def time2data(t):
-	return (t+__sit_hshift)/__secday + __sit_dshift
+	tshift = int(config.get('Database','time shift'))
+	return float(t+tshift)/__secday + __sit_dshift
 
 def data2time(st):
-	return (st-__sit_dshift)*__secday-__sit_hshift
+	tshift = int(config.get('Database','time shift'))
+	return (st-__sit_dshift)*__secday-tshift
 	
 def data2asc(st):
 	return time.ctime(data2time(st))
 
-def conf2time(c,sec,op,dt=False):
+def conf2time(sec,op,dt=False):
 	df = dt and time2asc(dt) or None
-	return asc2time(c.xget(sec,op,df))
+	return asc2time(config.get(sec,op,df))
 
 locale.getlocale()
 locale.setlocale(locale.LC_TIME,__mylocale)

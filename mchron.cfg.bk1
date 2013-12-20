@@ -1,0 +1,166 @@
+[Database]
+maker = sitrad
+source = datos.db
+path = .
+time shift = 57600
+
+[Email]
+from = emailer@orugaamarilla.com
+from name = Oruga Amarilla emailer
+server = mail.orugaamarilla.com
+subject = Finca San Pedro (Elite Flower)
+key = MW43NHI6bDNjNzA=
+address = chlewey@gmail.com;
+	invermeq@gmail.com
+
+[Brand 1]
+name = Invermeq Ortiz-Forero E.U.
+address = Cll. 109 #14B–60 of. 301
+phone = Tel.: (+571) 612 7185, 310 765 4021
+url = www.invermeq.com
+logo = invermeq.jpeg
+logo size = 108,48
+logo offset = -32,-8
+
+[Brand 2]
+name = Oruga Amarilla
+address = Cll. 109 #14B–60 of. 301
+phone = Tel.: (+571) 612 7185, 310 765 4021
+url = www.orugaamarilla.com
+logo = oruga.jpeg
+logo size = 72,30
+logo offset = 32,0
+
+[Site]
+name = Finca San Pedro (Elite Flower)
+instrument-2 = Interior Bloque 8 San Pedro
+instrument-3 = EXTERIOR
+instrument-4 = Interior Bloque 12 San Pedro
+instrument-6 = Estado de operacion (BL 8)
+instrument-7 = Interior Bloque 16 San Pedro
+
+[Report]
+title = Finca San Pedro (Elite Flower)
+figures = Figure 2;
+	Figure 3;
+	Figure 4;
+	Figure 6;
+	Figure 7
+namebase = report
+
+[Figure 2]
+description = Interior Bloque 8 San Pedro
+meters = 002.temperature;
+	002.humidity
+
+[Figure 3]
+description = EXTERIOR
+meters = 003.temperature;
+	003.humidity
+
+[Figure 4]
+description = Interior Bloque 12 San Pedro
+meters = 004.temp_dry;
+	004.temp_wet;
+	004.humidity
+
+[Figure 6]
+description = Estado de operacion (BL 8)
+meters = 006.VoltR
+
+[Figure 7]
+description = Interior Bloque 16 San Pedro
+meters = 007.temperature;
+	007.humidity
+
+[Instrument 2]
+status = 0
+description = Interior Bloque 8 San Pedro
+date = Sat Aug 11 14:25:14 2012
+model = 36
+type = mt530super
+meters = temperature;
+	humidity
+alarms = Humedad ambiente baja;
+	Temperatura ambiente alta;
+	Humedad ambiente alta
+
+[Instrument 3]
+status = 0
+description = EXTERIOR
+date = Sat Aug 11 14:30:35 2012
+model = 53
+type = mt530super
+meters = temperature;
+	humidity
+alarms = Humedad ambiente baja;
+	Temperatura ambiente alta;
+	Humedad ambiente alta
+
+[Instrument 4]
+status = 0
+description = Interior Bloque 12 San Pedro
+date = Sat Nov 17 15:23:26 2012
+model = 14
+type = ahc80plus
+meters = temp_dry;
+	temp_wet;
+	humidity
+alarms = Temperatura del bulbo húmedo mayor que la del bulbo seco;
+	Temperatura del bulbo seco alta;
+	Humedad ambiente alta;
+	Temperatura del bulbo húmedo alta
+
+[Instrument 6]
+status = 0
+description = Estado de operacion (BL 8)
+date = Fri Apr 26 13:47:10 2013
+model = 33
+type = Trifasico
+meters = VoltR
+alarms = Error en la lectura de la Fase R
+
+[Instrument 7]
+status = 0
+description = Interior Bloque 16 San Pedro
+date = Tue Jul  9 14:48:53 2013
+model = 36
+type = mt530super
+meters = temperature;
+	humidity
+
+[ahc80plus]
+meters = temp_dry;
+	temp_wet;
+	humidity
+flags = id;
+	ST1;
+	ST2;
+	time;
+	period
+
+[Trifasico]
+meters = VoltR
+flags = id;
+	VoltS;
+	VoltT;
+	OUT1;
+	time;
+	period
+
+[mt530super]
+meters = temperature;
+	humidity
+flags = id;
+	THERM;
+	HUMID;
+	AUX;
+	BUZZ;
+	time;
+	period
+
+[Run]
+from = Wed Nov 20 11:18:46 2013
+to = Thu Nov 21 19:56:49 2013
+time = Thu Dec 19 18:58:39 2013
+

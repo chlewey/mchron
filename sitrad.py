@@ -1,5 +1,5 @@
 
-import sqlite3,debug,json,time
+import sqlite3,debug,json,time,config
 
 latest = 25568.0
 instrumentos = {}
@@ -61,7 +61,7 @@ class database:
 		k,r = self.select('sqlite_master',where="type='table'")
 		return [i[1] for i in r]
 
-	def run(self,config,d):
+	def run(self,d):
 		assert type(d)==dict
 		ntime = d['time'][0]
 		d['time'][1]-= 31*24*60*60
@@ -88,7 +88,7 @@ class database:
 					for k in dd[x].keys():
 						if k in ['status','date','model','description']:
 							config.check('Instrument {}'.format(x), k, dd[x][k])
-				config.check('Report','figures',';\n'.join(['Figure {}'.format(x) for x in dd.keys()]))
+				config.checklist('Report','figures',['Figure {}'.format(x) for x in dd.keys()])
 			elif table=='rel_alarmes':
 				a,e = self.select(table,where="dataInicio>{0} OR dataFim>{0}".format(stime))
 				dd = [dict(zip(a,q)) for q in e]
@@ -97,9 +97,8 @@ class database:
 				for l in e:
 					if l[0] not in larms.keys():
 						larms[l[0]] = set()
-					larms[l[0]].add(l[1])
-				z = [config.check('Instrument {}'.format(x), 'alarms', (';\n'.join(larms[x])).encode('utf8')) for x in larms.keys()]
-				#print table,z
+					larms[l[0]].add(l[1].encode('utf8'))
+				z = [config.checklist('Instrument {}'.format(x), 'alarms', larms[x]) for x in larms.keys()]
 			else:
 				u,v = self.query('SELECT id,COUNT(*) AS n FROM {} WHERE data>{} GROUP BY id;'.format(table,stime))
 				if not len(v):
@@ -110,17 +109,26 @@ class database:
 					config.check('Instrument {}'.format(i), 'type', table)
 					a,e = self.select(table,limit=n,where="data>{0} AND id={1}".format(stime,i),order='data')
 					g = a.index('data')
-					z = [config.check(table, translate(x), False) for x in a]
-					meters = set()
-					for j in range(len(a)):
-						if z[j] and z[j] != 'False':
-							met = translate(a[j])
-							meters.add(met)
-							d['data'][i][met] = [(q[g],translatev(a[j],q[j])) for q in e]
-							d['keys'][i].append(met)
-					config.check('Instrument {}'.format(i), 'meters', ';\n'.join(meters),True)
+					common, flags, keys = [], [], []
+					j = 0
+					for x in a:
+						y = translate(x)
+						if y in ['temperature', 'VoltR', 'humidity', 'temp_dry', 'temp_wet']:
+							common.append(y)
+							keys.append(j)
+						else:
+							flags.append(y)
+						j+= 1
+					config.checklist(table, 'meters', common);
+					config.checklist(table, 'flags', flags);
+					for j in range(len(common)):
+						met = common[j]
+						d['data'][i][met] = [(q[g],translatev(met,q[keys[j]])) for q in e]
+						d['keys'][i].append(met)
+
+					config.checklist('Instrument {}'.format(i), 'meters', common, True)
 					ii = ';\n{:03}.'.format(i)
-					config.check('Figure {}'.format(i), 'meters', ii[2:]+ii.join(meters))
+					config.check('Figure {}'.format(i), 'meters', ii[2:]+ii.join(common))
 		return d
 
 	def check(self):

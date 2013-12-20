@@ -11,6 +11,9 @@ class mcConfig(ConfigParser.ConfigParser):
 		return self
 		
 	def __exit__(self, type, value, traceback):
+		self.close()
+	
+	def close(self):
 		with open(self.filename, 'w') as fp:
 			self.write(fp)
 
@@ -23,6 +26,21 @@ class mcConfig(ConfigParser.ConfigParser):
 		if default is not None:
 			self.set(section,option,default)
 		return default
+		
+	def getlist(self, section, option):
+		if self.has_section(section):
+			if self.has_option(section, option):
+				return self.get(section, option).split(';\n')
+		return []
+
+	def setlist(self, section, option, data):
+		assert type(data)==list
+		self.xset(section,option,';\n'.join(data))
+
+	def addtolist(self, section, option, item):
+		l = self.getlist(section, option)
+		l.append(item)
+		self.setlist(section, option, l)
 	
 	def xset(self, section, option, value):
 		if not self.has_section(section):
@@ -40,3 +58,75 @@ class mcConfig(ConfigParser.ConfigParser):
 			self.add_section(section)
 		self.set(section, option, value)
 		return False
+
+	def checklist(self, section, option, data, replace=False):
+		assert hasattr(data, '__iter__')
+		value = ';\n'.join(data)
+		result = self.check(section, option, value, replace)
+		if type(result)==bool:
+			return result
+		return result.split(';\n')
+		
+__config = None
+
+def init(configfile):
+	global __config
+	__config = mcConfig(configfile)
+
+def get(section, option, default=None):
+	global __config
+	return __config.xget(section, option, default)
+
+def set(section, option, value):
+	global __config
+	return __config.xset(section, option, value)
+
+def check(section, option, value, replace=False):
+	global __config
+	return __config.check(section, option, value, replace)
+
+def checklist(section, option, data, replace=False):
+	global __config
+	return __config.checklist(section, option, data, replace)
+
+def setlist(section, option, data):
+	global __config
+	return __config.setlist(section, option, data)
+
+def getlist(section, option):
+	global __config
+	return __config.getlist(section, option)
+
+def addtolist(section, option, item):
+	global __config
+	return __config.addtolist(section, option, item)
+
+def close():
+	global __config
+	__config.close()
+
+if __name__ == "__main__":
+	import sys,os.path,shutil
+	if 'xp' in sys.argv:
+		osys = 'winxp'
+	else:
+		osys = 'win7'
+	template = osys+'.cfg'
+	cfgfile = 'mchron.cfg'
+	
+	if os.path.exists(template) and not os.path.exists(cfgfile):
+		shutil.copyfile(template,cfgfile)
+		
+	init(cfgfile)
+	check('Database','maker','sitrad')
+	check('Database','source','datos.db')
+	if 'local' in sys.argv:
+		check('Database','path','.',True)
+	for arg in sys.argv:
+		if '@' in arg:
+			addtolist('Email', 'address', arg)
+		elif arg[:-3]=='.db':
+			check('Database','source',arg,True)
+	from base64 import b64encode
+	check('Email','key',b64encode('1n74r:l3c70'))
+	close()

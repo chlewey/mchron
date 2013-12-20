@@ -1,5 +1,5 @@
 
-import os,sys
+import os,sys,config
 from smtplib import SMTP_SSL as SMTP
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEBase import MIMEBase
@@ -46,22 +46,22 @@ def mimetype(filename):
 			return "{}/{}".format(mtypes[ext][0],mtypes[ext][1])
 	return 'application/octet-stream'
 
-def nsend(config,text,attch=[]):
+def nsend(text,attch=[]):
 	print text
 
-def send(config,text,attch=[]):
+def send(text,attch=[]):
 	assert type(attch)==list
 	
 	msg = MIMEMultipart()
-	me = config.xget('Email','from','emailer@orugaamarilla.com')
-	myname = config.xget('Email','fromName','Oruga Amarilla emailer')
-	to = config.xget('Email','address').split(';\n')
-	server = config.xget('Email','server','mail.orugaamarilla.com')
+	me = config.get('Email','from','emailer@orugaamarilla.com')
+	myname = config.get('Email','from name','Oruga Amarilla emailer')
+	to = config.getlist('Email','address')
+	server = config.get('Email','server','mail.orugaamarilla.com')
 	
 	msg['From'] = "{} <{}>".format(myname,me)
 	msg['To'] = ', '.join(to)
 	msg['Date'] = formatdate(localtime=True)
-	msg['Subject'] = config.xget('Email','subject',config.xget('Report','title'))
+	msg['Subject'] = config.get('Email','subject',config.get('Report','title'))
 	
 	msgtext = MIMEText(text)
 	msg.attach(msgtext)
@@ -72,14 +72,25 @@ def send(config,text,attch=[]):
 		Encoders.encode_base64(attfile)
 		attfile.add_header('Content-Disposition', 'attachement; filename={}'.format(os.path.basename(f)))
 		msg.attach(attfile)
-	
+
+	try:
+		import base64
+		user = config.get('Email','user')
+		if user is None:
+			user = me
+		passwd = base64.b64decode(config.get('Email','key'))
+		print server, user, passwd
+	finally:
+		pass
+
 	try:
 		s = SMTP(server)
 		s.set_debuglevel(0)
-		s.login('emailer@orugaamarilla.com','1n73r:l3c70')
+		s.login(user,passwd)
 		try:
 			s.sendmail(me, to, msg.as_string())
 		finally:
 			s.close()
 	except Exception, exc:
+		config.close()
 		print "mail failed; %s" % str(exc)

@@ -3,7 +3,7 @@
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from mytime import *
-import sitrad
+import sitrad,config
 
 __totalpages = 1
 __currentpage = 1
@@ -14,12 +14,12 @@ def grid(paper):
 	paper.setStrokeColor(pink)
 	paper.grid([x*inch/2 for x in range(2,16)],[y*inch/2 for y in range(2,21)])
 
-def resettime(c):
-	c.remove_option('Run','from')
-	c.remove_option('Run','to')
+def resettime():
+	config.remove_option('Run','from')
+	config.remove_option('Run','to')
 
-def setfromtime(c,n):
-	ta = c.xget('Run','from')
+def setfromtime(n):
+	ta = config.get('Run','from')
 	tf = ta and asc2data(ta)
 	if type(n) == list:
 		m = min(n)
@@ -29,11 +29,11 @@ def setfromtime(c,n):
 		m = min(n,tf)
 	else:
 		m = n
-	c.set('Run','from',data2asc(m))
+	config.set('Run','from',data2asc(m))
 	return m
 
-def settotime(c,n):
-	ta = c.xget('Run','to')
+def settotime(n):
+	ta = config.get('Run','to')
 	tt = ta and asc2data(ta)
 	if type(n) == list:
 		M = max(n)
@@ -43,7 +43,7 @@ def settotime(c,n):
 		M = max(n,tt)
 	else:
 		M = n
-	c.set('Run','to',data2asc(M))
+	config.set('Run','to',data2asc(M))
 	return M
 
 figurecolors = [
@@ -52,7 +52,7 @@ figurecolors = [
 	(0.4,0.8,0.0),
 	(0.4,0.0,0.8)]
 	
-def figure(paper,name,c,data,coords):
+def figure(paper,name,data,coords):
 	global figurecolors
 	lt,tp,rt,bt = coords
 	wd = rt-lt
@@ -87,8 +87,8 @@ def figure(paper,name,c,data,coords):
 			y1[-1] = max(y1[ix],y1[-1])
 			y1[ix] = y1[-1]
 		k0.append(k1)
-	x0 = setfromtime(c,x0)
-	x1 = settotime(c,x1)
+	x0 = setfromtime(x0)
+	x1 = settotime(x1)
 	dx = x1-x0
 	fx = float(wd)/dx
 
@@ -202,7 +202,7 @@ def unit(met):
 	global __units
 	return met in __units.keys() and __units[met] or ''
 
-def analize(c,name,met,data):
+def analize(name,met,data):
 	line = ''
 	dt = [q[0] for q in data]
 	dv = [q[1] for q in data]
@@ -243,55 +243,56 @@ def drawsimpleline(paper,begin,end,color=(0,0,0)):
 	paper.setStrokeColorRGB(r,g,b)
 	paper.drawPath(p)
 	
-def frontpage(paper,config,data):
+def frontpage(paper,data):
 	global figdist,__totalpages;
 	#grid(paper)
 
-	figs = config.xget('Report','figures').split(';\n')
+	figs = config.getlist('Report','figures')
 	n = len(figs)
 	dist = figdist[n]
 	d = [[] for i in range(n)]
 	for i in range(n):
-		name = config.xget(figs[i],'description')
-		mets = config.xget(figs[i],'meters').split(';\n')
+		name = config.get(figs[i],'description')
+		mets = config.getlist(figs[i],'meters')
 		for m in mets:
 			ins,met = m.split('.')
 			ins = int(ins)
 			dl = data['data'][ins][met]
 			d[i].append((m,dl))
-		figure(paper,name,config,d[i],dist2paper(dist[i]))
-	frontpagetitle(paper,config,data)
+		figure(paper,name,d[i],dist2paper(dist[i]))
+	frontpagetitle(paper,data)
 
 	offset = 360
 	for i in range(n):
-		name = config.xget(figs[i],'description')
-		mets = config.xget(figs[i],'meters').split(';\n')
+		name = config.get(figs[i],'description')
+		mets = config.getlist(figs[i],'meters')
 		j = 0
 		for m in mets:
-			ins,met = m.split('.')
-			ins = int(ins)
-			dl = data['data'][ins][met]
-			line = analize(config,name,met,dl)
-			drawsimpleline(paper,(72,724-offset),(76,720-offset),figurecolors[j])
-			drawsimpleline(paper,(76,720-offset),(81,728-offset),figurecolors[j])
-			offset = drawline(paper,line,offset,left=84)
 			if offset >= 640:
 				offset = 13
 				__totalpages += 1
 				paginate(paper)
-				brand(paper,config)
+				brand(paper)
+			ins,met = m.split('.')
+			ins = int(ins)
+			inn = config.get('Instrument {}'.format(ins),'description',name)
+			dl = data['data'][ins][met]
+			line = analize(inn,met,dl)
+			drawsimpleline(paper,(72,724-offset),(76,720-offset),figurecolors[j])
+			drawsimpleline(paper,(76,720-offset),(81,728-offset),figurecolors[j])
+			offset = drawline(paper,line,offset,left=84)
 			j += 1
 			
 
-def frontpagetitle(paper,config,data):
+def frontpagetitle(paper,data):
 	from reportlab.lib.colors import black
-	title = config.xget('Report','title','Reporte')
+	title = config.get('Report','title','Reporte')
 	subtitle1 = "Reporte de {} generado el {}.".format(
-		config.xget('Site','name'),
+		config.get('Site','name'),
 		time2esk(data['time'][0]))
 	subtitle2 = "Período del {} al {}.".format(
-		time2esh(conf2time(config,'Run','From',data['time'][1])),
-		time2esh(conf2time(config,'Run','To',data['time'][0])))
+		time2esh(conf2time('Run','From',data['time'][1])),
+		time2esh(conf2time('Run','To',data['time'][0])))
 	paper.setFillColor(black)
 	paper.setTitle(title)
 	paper.setSubject('{}\n{}'.format(subtitle1,subtitle2))
@@ -319,60 +320,92 @@ def paginate(paper):
 	paper.showPage()
 	__currentpage += 1
 	
-def brand(paper,config):
+def brand(paper):
+	from reportlab.platypus.flowables import Image
 	from reportlab.lib.colors import black,blue
 
 	paper.setFillColor(black)
 	paper.setFont('Helvetica-Bold',9)
-	paper.drawString(72,63,config.xget('Brand 1','name'))
+	paper.drawString(72,63,config.get('Brand 1','name'))
 	paper.setFont('Helvetica',8)
-	paper.drawString(72,54,config.xget('Brand 1','address'))
-	paper.drawString(72,45,config.xget('Brand 1','phone'))
+	paper.drawString(72,54,config.get('Brand 1','address'))
+	paper.drawString(72,45,config.get('Brand 1','phone'))
 	paper.setFillColor(blue)
-	paper.drawString(72,36,config.xget('Brand 1','url'))
+	paper.drawString(72,36,config.get('Brand 1','url'))
+	logo = config.get('Brand 1','logo')
+	if logo:
+		offset = config.get('Brand 1','logo offset')
+		if offset:
+			osxy = offset.split(',')
+			x,y = int(osxy[0]),int(osxy[1])
+		else:
+			x,y = 0,0
+		size = config.get('Brand 1','logo size')
+		if size:
+			size = size.split(',')
+			w,h = int(size[0]),int(size[1])
+			paper.drawImage(logo,72+x,720+y,w,h)
+		else:
+			paper.drawImage(logo,72+x,720+y)
 
 	paper.setFillColor(black)
 	paper.setFont('Helvetica-Bold',9)
-	paper.drawRightString(540,62,config.xget('Brand 2','name'))
+	paper.drawRightString(540,62,config.get('Brand 2','name'))
 	paper.setFont('Helvetica',8)
-	paper.drawRightString(540,54,config.xget('Brand 2','address'))
-	paper.drawRightString(540,45,config.xget('Brand 2','phone'))
+	paper.drawRightString(540,54,config.get('Brand 2','address'))
+	paper.drawRightString(540,45,config.get('Brand 2','phone'))
 	paper.setFillColor(blue)
-	paper.drawRightString(540,36,config.xget('Brand 2','url'))
+	paper.drawRightString(540,36,config.get('Brand 2','url'))
+	logo = config.get('Brand 2','logo')
+	if logo:
+		offset = config.get('Brand 2','logo offset')
+		if offset:
+			osxy = offset.split(',')
+			x,y = int(osxy[0]),int(osxy[1])
+		else:
+			x,y = 0,0
+		size = config.get('Brand 2','logo size')
+		if size:
+			size = size.split(',')
+			w,h = int(size[0]),int(size[1])
+			paper.drawImage(logo,540+x-w,720+y,w,h)
+		else:
+			paper.drawImage(logo,540+x,720+y)
 	
-def report(docfn,config,data):
+def report(docfn,data):
 	global __totalpages
 	paper = canvas.Canvas(docfn,pagesize=letter)
 	paper.setAuthor('Oruga Amarilla')
 
-	figs = config.xget('Report','figures').split(';\n')
+	figs = config.getlist('Report','figures')
 	__totalpages += len(figs)
 
-	brand(paper,config)
-	frontpage(paper,config,data)
+	brand(paper)
+	frontpage(paper,data)
 	
-	site = config.xget('Site','name')
+	site = config.get('Site','name')
 	for fig in figs:
 		paginate(paper)
-		brand(paper,config)
-		name = config.xget(fig,'description')
-		mets = config.xget(fig,'meters').split(';\n')
+		brand(paper)
+		name = config.get(fig,'description')
+		mets = config.getlist(fig,'meters')
 		d = []
 		offset,j = 400,0
 		for m in mets:
 			ins,met = m.split('.')
 			ins = int(ins)
+			inn = config.get('Instrument {}'.format(ins),'description',name)
 			dl = data['data'][ins][met]
 			d.append((m,dl))
 
-			line = analize(config,name,met,dl)
+			line = analize(inn,met,dl)
 			drawsimpleline(paper,(72,724-offset),(76,720-offset),figurecolors[j])
 			drawsimpleline(paper,(76,720-offset),(81,728-offset),figurecolors[j])
 			offset = drawline(paper,line,offset,left=84)
 			j+= 1
 
 		otherpagetitle(paper,name,site)
-		figure(paper,name,config,d,(72,660,540,360))
+		figure(paper,name,d,(72,660,540,360))
 
 	paginate(paper)
 	paper.save()
