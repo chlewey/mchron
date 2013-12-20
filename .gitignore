@@ -19,3 +19,5 @@ develop-eggs/
 *.cfg
 *.cfg.*
 *.pdf
+*.msi
+*.exe

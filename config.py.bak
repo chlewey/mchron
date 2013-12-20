@@ -101,10 +101,6 @@ def addtolist(section, option, item):
 	global __config
 	return __config.addtolist(section, option, item)
 
-def remove(section, option):
-	global __config
-	return __config.remove_option(section, option)
-
 def close():
 	global __config
 	__config.close()

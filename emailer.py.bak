@@ -79,6 +79,7 @@ def send(text,attch=[]):
 		if user is None:
 			user = me
 		passwd = base64.b64decode(config.get('Email','key'))
+		print server, user, passwd
 	finally:
 		pass
 

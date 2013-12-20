@@ -64,7 +64,7 @@ class database:
 	def run(self,d):
 		assert type(d)==dict
 		ntime = d['time'][0]
-	#	d['time'][1]-= 31*24*60*60
+		d['time'][1]-= 31*24*60*60
 		ttime = d['time'][1]
 		stime = time2data(ttime)
 
@@ -109,24 +109,24 @@ class database:
 					config.check('Instrument {}'.format(i), 'type', table)
 					a,e = self.select(table,limit=n,where="data>{0} AND id={1}".format(stime,i),order='data')
 					g = a.index('data')
-					common, flags, keys = [], [], {}
+					common, flags, keys = [], [], []
 					j = 0
 					for x in a:
 						y = translate(x)
-						keys[y] = (j,x)
-						if y in ['temperature', 'VoltR', 'humidity', 'temp_dry', 'temp_wet', 'tension']:
+						if y in ['temperature', 'VoltR', 'humidity', 'temp_dry', 'temp_wet']:
 							common.append(y)
+							keys.append(j)
 						else:
 							flags.append(y)
 						j+= 1
-					meters = config.checklist(table, 'meters', common);
+					config.checklist(table, 'meters', common);
 					config.checklist(table, 'flags', flags);
-					for j in range(len(meters)):
-						met = meters[j]
-						d['data'][i][met] = [(q[g],translatev(keys[met][1],q[keys[met][0]])) for q in e]
+					for j in range(len(common)):
+						met = common[j]
+						d['data'][i][met] = [(q[g],translatev(met,q[keys[j]])) for q in e]
 						d['keys'][i].append(met)
 
-					config.checklist('Instrument {}'.format(i), 'meters', meters, True)
+					config.checklist('Instrument {}'.format(i), 'meters', common, True)
 					ii = ';\n{:03}.'.format(i)
 					config.check('Figure {}'.format(i), 'meters', ii[2:]+ii.join(common))
 		return d

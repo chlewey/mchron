@@ -1,12 +1,16 @@
 
 import locale,time,config
 __lstack = []
-__mylocale = 'es_CO.utf8'
-__sit_dshift = 25568
+__mylocale = ''
+__sit_dshift = 25569
 __secday = 24*3600
 
 def __localein(l=__mylocale):
-	global __lstack
+	global __lstack,__mylocale
+	if not __mylocale:
+		__mylocale==config.get('Database','locale','es_CO.utf8')
+	if not l:
+		l = __mylocale
 	__lstack.append(locale.getlocale())
 	locale.setlocale(locale.LC_TIME,l)
 	return __lstack[-1]

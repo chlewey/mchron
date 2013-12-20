@@ -15,8 +15,8 @@ def grid(paper):
 	paper.grid([x*inch/2 for x in range(2,16)],[y*inch/2 for y in range(2,21)])
 
 def resettime():
-	config.remove('Run','from')
-	config.remove('Run','to')
+	config.remove_option('Run','from')
+	config.remove_option('Run','to')
 
 def setfromtime(n):
 	ta = config.get('Run','from')
@@ -135,9 +135,8 @@ def figure(paper,name,data,coords):
 		if dy>110:
 			fac = 20
 		s = [fac*h for h in range(int(y0[i]/fac+1),int(y1[i]/fac+1))]
-		if not s:
-			pass
-		elif k0[i][0]=='t':
+#		print s
+		if k0[i][0]=='t':
 			x2,x3=lt-5,lt
 			paper.drawRightString(lt-5,bt+(s[-1]-y0[i])*fy,'{}'.format(s[-1]))
 			paper.drawRightString(lt-5,bt+(s[0]-y0[i])*fy,'{}'.format(s[0]))
@@ -248,7 +247,6 @@ def frontpage(paper,data):
 	global figdist,__totalpages;
 	#grid(paper)
 
-	resettime()
 	figs = config.getlist('Report','figures')
 	n = len(figs)
 	dist = figdist[n]
@@ -259,13 +257,7 @@ def frontpage(paper,data):
 		for m in mets:
 			ins,met = m.split('.')
 			ins = int(ins)
-			try:
-				dl = data['data'][ins][met]
-			except Exception, exc:
-				print data['data'][ins].keys()
-				config.close()
-				print "Failed; %s" % str(exc)
-				exit()
+			dl = data['data'][ins][met]
 			d[i].append((m,dl))
 		figure(paper,name,d[i],dist2paper(dist[i]))
 	frontpagetitle(paper,data)
