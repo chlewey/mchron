@@ -204,14 +204,18 @@ def unit(met):
 	return met in __units.keys() and __units[met] or ''
 
 def analize(name,met,data):
-	line = ''
+	line = '\u00a0'
 	dt = [q[0] for q in data]
 	dv = [q[1] for q in data]
 	line+= '{} de {}: '.format(translate(met).capitalize(),name)
 	m = min(dv)
 	i = dv.index(m)
 	t = dt[i]
-	line+= ' Mínimo {}{} el {} a las {}.'.format(m,unit(met),data2fmt('%A %d',t),data2fmt('%H:%M',t))
+	s = data2fmt('%A %d',t)
+	l = ' Mínimo {}{} el {} a las {}.'
+#	print [s,l]
+	l = l.format(m,unit(met),s,data2fmt('%H:%M',t))
+	line+= l
 	M = max(dv)
 	i = dv.index(M)
 	t = dt[i]
@@ -259,13 +263,7 @@ def frontpage(paper,data):
 		for m in mets:
 			ins,met = m.split('.')
 			ins = int(ins)
-			try:
-				dl = data['data'][ins][met]
-			except Exception, exc:
-				print data['data'][ins].keys()
-				config.close()
-				print "Failed; %s" % str(exc)
-				exit()
+			dl = data['data'][ins][met]
 			d[i].append((m,dl))
 		figure(paper,name,d[i],dist2paper(dist[i]))
 	frontpagetitle(paper,data)

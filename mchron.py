@@ -47,7 +47,7 @@ def main():
 		otime = ntime - 30*24*60*60
 	print 'Current time is {}.'.format(time2asc(ntime))
 	if ntime - otime < 86400:
-		otime = (int(ntime/3600)-24)*3600.0
+		otime = (int(ntime/3600)-24)*3600
 	print 'Reading since {}.'.format(time2asc(otime))
 
 	""" Read the database """
@@ -66,7 +66,7 @@ def main():
 	#	raise exc
 
 	""" Email the document """
-	emailer.nsend(EMAILMSG.format(
+	emailer.send(EMAILMSG.format(
 		config.get('Site','name'),
 		time2esk(ntime),
 		time2hms(ntime),
