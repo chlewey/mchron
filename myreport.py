@@ -22,9 +22,12 @@ def setfromtime(n):
 	ta = config.get('Run','from')
 	tf = ta and asc2data(ta)
 	if type(n) == list:
-		m = min(n)
-		if tf:
-			m = min(m,tf)
+                if not n and tf:
+                        m = tf
+                else:
+        		m = min(n)
+                        if tf:
+                                m = min(m,tf)
 	elif tf:
 		m = min(n,tf)
 	else:
@@ -36,9 +39,12 @@ def settotime(n):
 	ta = config.get('Run','to')
 	tt = ta and asc2data(ta)
 	if type(n) == list:
-		M = max(n)
-		if tt:
-			M = max(M,tt)
+                if not n and tt:
+                        M = tt
+                else:
+        		M = max(n)
+        		if tt:
+        			M = max(M,tt)
 	elif tt:
 		M = max(n,tt)
 	else:
@@ -204,7 +210,7 @@ def unit(met):
 	return met in __units.keys() and __units[met] or ''
 
 def analize(name,met,data):
-	line = '\u00a0'
+	line = ''
 	dt = [q[0] for q in data]
 	dv = [q[1] for q in data]
 	line+= '{} de {}: '.format(translate(met).capitalize(),name)
@@ -263,8 +269,11 @@ def frontpage(paper,data):
 		for m in mets:
 			ins,met = m.split('.')
 			ins = int(ins)
-			dl = data['data'][ins][met]
-			d[i].append((m,dl))
+			try:
+        			dl = data['data'][ins][met]
+        			d[i].append((m,dl))
+        		except:
+                                print ins,met
 		figure(paper,name,d[i],dist2paper(dist[i]))
 	frontpagetitle(paper,data)
 
@@ -282,7 +291,10 @@ def frontpage(paper,data):
 			ins,met = m.split('.')
 			ins = int(ins)
 			inn = config.get('Instrument {}'.format(ins),'description',name)
-			dl = data['data'][ins][met]
+			try:
+        			dl = data['data'][ins][met]
+        		except:
+                                continue
 			line = analize(inn,met,dl)
 			drawsimpleline(paper,(72,724-offset),(76,720-offset),figurecolors[j])
 			drawsimpleline(paper,(76,720-offset),(81,728-offset),figurecolors[j])
@@ -401,7 +413,10 @@ def report(docfn,data):
 			ins,met = m.split('.')
 			ins = int(ins)
 			inn = config.get('Instrument {}'.format(ins),'description',name)
-			dl = data['data'][ins][met]
+			try:
+        			dl = data['data'][ins][met]
+        		except:
+                                continue
 			d.append((m,dl))
 
 			line = analize(inn,met,dl)
