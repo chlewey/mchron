@@ -27,10 +27,7 @@ class mcConfig(ConfigParser.ConfigParser):
 	
 	def save(self):
 		with open(self.filename, 'w') as fp:
-			#try:
-				self.write(fp)
-			#except:
-			#	print (self.__str__(),fp)
+			self.write(fp)
 
 	def close(self):
 		self.save()
@@ -100,17 +97,14 @@ def init(configfile):
 
 def get(section, option, default=None):
 	global __config
-	print 'Getting {}/{}{}'.format(section,option,default and ' ({})'.format(default) or '')
 	return __config.xget(section, option, default)
 
 def set(section, option, value):
 	global __config
-	print 'Setting {}/{} to {}'.format(section,option,value)
 	return __config.xset(section, option, value)
 
 def check(section, option, value, replace=False):
 	global __config
-	print 'Checking {}/{} to {}{}'.format(section,option,[value],replace and ' (replacing)' or '')
 	return __config.check(section, option, value, replace)
 
 def checklist(section, option, data, replace=False):
