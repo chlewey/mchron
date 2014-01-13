@@ -22,12 +22,12 @@ def setfromtime(n):
 	ta = config.get('Run','from')
 	tf = ta and asc2data(ta)
 	if type(n) == list:
-                if not n and tf:
-                        m = tf
-                else:
-        		m = min(n)
-                        if tf:
-                                m = min(m,tf)
+		if not n:
+			m = tf or time2data(now())-1
+		else:
+			m = min(n)
+			if tf:
+				m = min(m,tf)
 	elif tf:
 		m = min(n,tf)
 	else:
@@ -39,12 +39,12 @@ def settotime(n):
 	ta = config.get('Run','to')
 	tt = ta and asc2data(ta)
 	if type(n) == list:
-                if not n and tt:
-                        M = tt
-                else:
-        		M = max(n)
-        		if tt:
-        			M = max(M,tt)
+		if not n:
+			M = tt or time2data(now())
+		else:
+			M = max(n)
+			if tt:
+				M = max(M,tt)
 	elif tt:
 		M = max(n,tt)
 	else:
@@ -305,6 +305,7 @@ def frontpage(paper,data):
 def frontpagetitle(paper,data):
 	from reportlab.lib.colors import black
 	title = config.get('Report','title','Reporte')
+	print title
 	subtitle1 = "Reporte de {} generado el {}.".format(
 		config.get('Site','name'),
 		time2esk(data['time'][0]))
@@ -315,7 +316,11 @@ def frontpagetitle(paper,data):
 	paper.setTitle(title)
 	paper.setSubject('{}\n{}'.format(subtitle1,subtitle2))
 	paper.setFont('Helvetica-Bold',16)
-	paper.drawCentredString(306,720,title)
+	#try:
+	paper.drawCentredString(306,720,title or 'Titulo')
+	#except:
+	#	print ('ERROR:', title)
+	#	config.save()
 	paper.setFont('Helvetica',11)
 	paper.drawCentredString(306,702,subtitle1)
 	paper.drawCentredString(306,686,subtitle2)

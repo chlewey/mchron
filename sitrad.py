@@ -72,8 +72,9 @@ class database:
 			if table=='empresa':
 				a,e = self.select(table)
 				empresa = e[0][0]
-				r = config.check('Site','name',empresa,True)
-				r = config.check('Report','title',empresa)
+				if empresa is None: continue
+				r = config.check('Site','name',empresa.encode('UTF-8'),True)
+				r = config.check('Report','title',empresa.encode('UTF-8'))
 				d[table] = empresa
 			elif table in ['modulo_io_cfg']:
 				a,e = self.select(table)
@@ -82,12 +83,14 @@ class database:
 				a,e = self.select(table)
 				dd = dict([[q[0],dict(translate(zip(a[1:],q[1:])))] for q in e])
 				d[table] = dd
-				[config.check('Site','instrument-{}'.format(x),dd[x]['description'],True) for x in dd.keys()]
-				[config.check('Figure {}'.format(x),'description',dd[x]['description']) for x in dd.keys()]
+				[config.check('Site','instrument-{}'.format(x),dd[x]['description'].encode('UTF-8'),True) for x in dd.keys()]
+				[config.check('Figure {}'.format(x),'description',dd[x]['description'].encode('UTF-8')) for x in dd.keys()]
 				for x in dd.keys():
 					for k in dd[x].keys():
-						if k in ['status','date','model','description']:
+						if k in ['status','date','model']:
 							config.check('Instrument {}'.format(x), k, dd[x][k])
+						elif k=='description':
+							config.check('Instrument {}'.format(x), k, dd[x][k].encode('UTF-8'))
 				config.checklist('Report','figures',['Figure {}'.format(x) for x in dd.keys()])
 			elif table=='rel_alarmes':
 				a,e = self.select(table,where="dataInicio>{0} OR dataFim>{0}".format(stime))

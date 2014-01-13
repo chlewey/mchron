@@ -6,6 +6,18 @@ class mcConfig(ConfigParser.ConfigParser):
 		ConfigParser.ConfigParser.__init__(self)
 		self.filename = filename or 'config.cfg'
 		self.read(self.filename)
+	
+	def __str__(self):
+		s = ''
+		for x in self.sections():
+			s += '['+x+']\n'
+			for y in self.options(x):
+				try:
+					s += y+' = '+self.get(x,y)+'\n'
+				except:
+					print s,('ERROR IN:',x,y),'\n\n'
+			s += '\n'
+		return s
 		
 	def __enter__(self):
 		return self
@@ -13,14 +25,27 @@ class mcConfig(ConfigParser.ConfigParser):
 	def __exit__(self, type, value, traceback):
 		self.close()
 	
-	def close(self):
+	def save(self):
 		with open(self.filename, 'w') as fp:
-			self.write(fp)
+			#try:
+				self.write(fp)
+			#except:
+			#	print (self.__str__(),fp)
+
+	def close(self):
+		self.save()
+
+	def remove(self, section, option):
+		if self.has_section(section):
+			self.remove_option(section, option)
+		else:
+			self.add_section(section)
 
 	def xget(self, section, option, default=None):
 		if self.has_section(section):
 			if self.has_option(section, option):
-				return self.get(section, option)
+				answer = self.get(section, option)
+				return answer
 		elif default is not None:
 			self.add_section(section)
 		if default is not None:
@@ -75,14 +100,17 @@ def init(configfile):
 
 def get(section, option, default=None):
 	global __config
+	print 'Getting {}/{}{}'.format(section,option,default and ' ({})'.format(default) or '')
 	return __config.xget(section, option, default)
 
 def set(section, option, value):
 	global __config
+	print 'Setting {}/{} to {}'.format(section,option,value)
 	return __config.xset(section, option, value)
 
 def check(section, option, value, replace=False):
 	global __config
+	print 'Checking {}/{} to {}{}'.format(section,option,[value],replace and ' (replacing)' or '')
 	return __config.check(section, option, value, replace)
 
 def checklist(section, option, data, replace=False):
@@ -103,7 +131,11 @@ def addtolist(section, option, item):
 
 def remove(section, option):
 	global __config
-	return __config.remove_option(section, option)
+	return __config.remove(section, option)
+
+def save():
+	global __config
+	__config.save()
 
 def close():
 	global __config

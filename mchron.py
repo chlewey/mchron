@@ -49,7 +49,7 @@ def main(debug=False):
 	if ntime - otime < 86400:
 		otime = (int(ntime/3600)-24)*3600
 	print 'Reading since {}.'.format(time2asc(otime))
-
+	
 	""" Read the database """
 	d = {'time': [ntime,otime], 'data': {}, 'keys': {}}
 	with getdb() as db:
