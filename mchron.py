@@ -34,7 +34,7 @@ def getdb():
 		return sitrad.database(dbfile)
 	raise 'No configuration for a "{}" database'.format(maker)
 
-def main():
+def main(debug=False):
 	""" Read the configuration file """
 	config.init(CONFIGFILE)
 	ltime = config.get('Run','time')
@@ -66,7 +66,7 @@ def main():
 	#	raise exc
 
 	""" Email the document """
-	emailer.send(EMAILMSG.format(
+	txt = EMAILMSG.format(
 		config.get('Site','name'),
 		time2esk(ntime),
 		time2hms(ntime),
@@ -74,12 +74,16 @@ def main():
 		time2hms(conf2time('Run','from',otime)),
 		time2esk(conf2time('Run','to',ntime)),
 		time2hms(conf2time('Run','to',ntime))
-		),
-		[docfn])
+		)
+	if debug:
+                emailer.nsend(txt)
+        else:
+        	emailer.send(txt,[docfn])
 
 	""" Saving configuration """
 	config.set('Run','time',time2asc(ntime))
 	config.close()
 
 if __name__ == "__main__":
-	main()
+        from sys import argv
+	main('debug' in argv)

@@ -105,7 +105,7 @@ def figure(paper,name,data,coords):
 	elif dx<3:
 		r = [i/4.0 for i in range(int(x0*4+1),int(x1*4+1))]
 	elif dx<7:
-		ft = '%D %p'
+		ft = '%a %p'
 		r = [i/2.0 for i in range(int(x0*2+1),int(x1*2+1))]
 	else:
 		ft = '%D/%M'

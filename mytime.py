@@ -70,7 +70,11 @@ def time2esh(t):
 
 def time2fmt(ft,t):
 	le = __localein()
-	s = time.strftime(ft,time.localtime(t))
+	try:
+        	s = time.strftime(ft,time.localtime(t))
+        except:
+                print ft
+                exit()
 	if le:
                 s = s.decode(le)
                 #print [le,s]
