@@ -1,18 +1,10 @@
 
 import sqlite3,debug,json,time,config
+from mytime import *
 
 latest = 25568.0
 instrumentos = {}
 empresa = ''
-
-def time2data(time):
-	return (time+57600)/86400 + 25568
-
-def data2time(data):
-	return (data-25568)*86400-57600
-	
-def data2str(data):
-	return time.ctime(data2time(data))
 
 class database:
 	def __init__(self,dfile):
@@ -241,7 +233,7 @@ translations = {
 	'estagio':('stage',None),
 	'endereco':('address',None),
 	'descricao':('description',None),
-	'datacad':('date',data2str),
+	'datacad':('date',data2asc),
 	'alarme1L':('alarm1L',decimate),
 	'alarme1H':('alarm1H',decimate),
 	'alarme2L':('alarm2L',decimate),
