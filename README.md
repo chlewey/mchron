@@ -18,3 +18,5 @@ A configuration file will list
 
 This product will not take care of its timing.  It should be
 left to the operating system to call this program at regular intervals.
+
+.
