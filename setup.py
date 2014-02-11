@@ -3,6 +3,7 @@ from cx_Freeze import setup, Executable
 
 build_exe_options = {
 #    "packages": ["os"],
+    'packages': ['email.MIMEMultipart','multipart','email.mime.multipart'],
     'include_files': ["winxp.cfg","win7.cfg"],
 #	'build_exe': {'include_msvcr': "C:\\WINDOWS\system32\\"},
     }
