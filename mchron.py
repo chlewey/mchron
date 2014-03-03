@@ -59,6 +59,7 @@ def main(debug=False):
 	docfn = "{}_{}.pdf".format(
 		config.get('Report','namebase','report'),
 		time2ymd(ntime))
+	print docfn
 	#try:
 	report(docfn,d)
 	#except Exception, exc:

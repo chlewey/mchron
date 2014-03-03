@@ -114,7 +114,7 @@ class database:
 						else:
 							flags.append(y)
 						j+= 1
-					meters = config.checklist(table, 'meters', common);
+					meters = config.checklist(table, 'meters', common) or [];
 					config.checklist(table, 'flags', flags);
 					for j in range(len(meters)):
 						met = meters[j]

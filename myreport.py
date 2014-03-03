@@ -108,7 +108,7 @@ def figure(paper,name,data,coords):
 		ft = '%a %p'
 		r = [i/2.0 for i in range(int(x0*2+1),int(x1*2+1))]
 	else:
-		ft = '%D/%M'
+		ft = '%d/%m'
 		r = [float(i) for i in range(int(x0+1),int(x1+1))]
 	paper.setFont('Helvetica',6)
 	p = paper.beginPath()
@@ -210,24 +210,28 @@ def unit(met):
 	return met in __units.keys() and __units[met] or ''
 
 def analize(name,met,data):
-	line = ''
+	line = u''
 	dt = [q[0] for q in data]
 	dv = [q[1] for q in data]
-	line+= '{} de {}: '.format(translate(met).capitalize(),name)
+	line+= u'{} de {}: '.format(translate(met).decode('utf-8').capitalize(),name)
 	m = min(dv)
 	i = dv.index(m)
 	t = dt[i]
 	s = data2fmt('%A %d',t)
-	l = ' Mínimo {}{} el {} a las {}.'
-#	print [s,l]
-	l = l.format(m,unit(met),s,data2fmt('%H:%M',t))
+	l = u' Mínimo {}{} el {} a las {}.'
+	#print [line,s,l,m,met,unit(met)]
+	l = l.format(m,unit(met).decode('utf-8'),s,data2fmt('%H:%M',t))
 	line+= l
 	M = max(dv)
 	i = dv.index(M)
 	t = dt[i]
-	line+= ' Máximo {}{} el {} a las {}.'.format(M,unit(met),data2fmt('%A %d',t),data2fmt('%H:%M',t))
+	s = data2fmt('%A %d',t)
+	l = u' Máximo {}{} el {} a las {}.'
+	#print [s,l,M,met,unit(met)]
+	l = l.format(M,unit(met).decode('utf-8'),s,data2fmt('%H:%M',t))
+        line+= l
 
-#	print line
+	#print line
 	return line
 
 def drawline(paper,line,offset=0,top=720,left=72):
@@ -399,13 +403,14 @@ def report(docfn,data):
 	global __totalpages
 	paper = canvas.Canvas(docfn,pagesize=letter)
 	paper.setAuthor('Oruga Amarilla')
-
+        print 1
 	figs = config.getlist('Report','figures')
 	__totalpages += len(figs)
-
+        print 2
 	brand(paper)
+	print 3
 	frontpage(paper,data)
-	
+	print 3,figs
 	site = config.get('Site','name')
 	for fig in figs:
 		paginate(paper)
