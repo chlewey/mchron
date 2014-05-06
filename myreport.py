@@ -19,6 +19,7 @@ def resettime():
 	config.remove('Run','to')
 
 def setfromtime(n):
+##      print 'from:',[data2asc(q) for q in n]
 	ta = config.get('Run','from')
 	tf = ta and asc2data(ta)
 	if type(n) == list:
@@ -36,6 +37,7 @@ def setfromtime(n):
 	return m
 
 def settotime(n):
+##      print '  to:',[data2asc(q) for q in n]
 	ta = config.get('Run','to')
 	tt = ta and asc2data(ta)
 	if type(n) == list:
@@ -97,6 +99,7 @@ def figure(paper,name,data,coords,stretch=False):
 	if stretch:
 		setfromtime(x0)
 		settotime(x1)
+		x0,x1 = min(x0),max(x1)
 	else:
 		x0 = setfromtime(x0)
 		x1 = settotime(x1)
@@ -135,9 +138,9 @@ def figure(paper,name,data,coords,stretch=False):
 		fy = float(ht)/dy
 		p = paper.beginPath()
 		#p.moveTo(lt+(dd[0][0]-x0)*fx,bt+(dd[0][1]-y0[i])*fy)
-		qd = dd[0][0]-10*gp
+		qd = dd[0][0]-10*gp[i]
 		for q in dd:
-			if q[0]-qd > 2*gp:
+			if q[0]-qd > 2*gp[i]:
 				p.moveTo(lt+(dd[0][0]-x0)*fx,bt+(dd[0][1]-y0[i])*fy)
 			else:
 				p.lineTo(lt+(q[0]-x0)*fx,bt+(q[1]-y0[i])*fy)
@@ -151,20 +154,37 @@ def figure(paper,name,data,coords,stretch=False):
 		if dy>110:
 			fac = 20
 		s = [fac*h for h in range(int(y0[i]/fac+1),int(y1[i]/fac+1))]
-		if not s:
-			pass
-		elif k0[i][0]=='t':
+		p = paper.beginPath()
+		if k0[i][0] in 't!':
 			x2,x3=lt-5,lt
-			paper.drawRightString(lt-5,bt+(s[-1]-y0[i])*fy,'{}'.format(s[-1]))
-			paper.drawRightString(lt-5,bt+(s[0]-y0[i])*fy,'{}'.format(s[0]))
+			if len(s)<2:
+				paper.drawRightString(lt-5,bt+dy*fy,'{}'.format(y1[i]))
+				paper.drawRightString(lt-5,bt,'{}'.format(y0[i]))
+				p.moveTo(x2,bt+dy*fy)
+				p.lineTo(x3,bt+dy*fy)
+				p.moveTo(x2,bt)
+				p.lineTo(x3,bt)
+			else:
+				paper.drawRightString(lt-5,bt+(s[-1]-y0[i])*fy,'{}'.format(s[-1]))
+				paper.drawRightString(lt-5,bt+(s[0]-y0[i])*fy,'{}'.format(s[0]))
+				for y in s:
+					p.moveTo(x2,bt+(y-y0[i])*fy)
+					p.lineTo(x3,bt+(y-y0[i])*fy)
 		else:
 			x2,x3=rt,rt+5
-			paper.drawString(rt+5,bt+(s[-1]-y0[i])*fy,'{}'.format(s[-1]))
-			paper.drawString(rt+5,bt+(s[0]-y0[i])*fy,'{}'.format(s[0]))
-		p = paper.beginPath()
-		for y in s:
-			p.moveTo(x2,bt+(y-y0[i])*fy)
-			p.lineTo(x3,bt+(y-y0[i])*fy)
+			if len(s)<2:
+				paper.drawString(rt+5,bt+dy*fy,'{}'.format(y1[i]))
+				paper.drawString(rt+5,bt,'{}'.format(y0[i]))
+				p.moveTo(x2,bt+dy*fy)
+				p.lineTo(x3,bt+dy*fy)
+				p.moveTo(x2,bt)
+				p.lineTo(x3,bt)
+			else:
+				paper.drawString(rt+5,bt+(s[-1]-y0[i])*fy,'{}'.format(s[-1]))
+				paper.drawString(rt+5,bt+(s[0]-y0[i])*fy,'{}'.format(s[0]))
+				for y in s:
+					p.moveTo(x2,bt+(y-y0[i])*fy)
+					p.lineTo(x3,bt+(y-y0[i])*fy)
 		paper.drawPath(p)
 		i+=1
 
@@ -214,10 +234,21 @@ __units = {
 	'temp_dry': '°C',
 	'temp_wet': '°C',
 	'temperature': '°C',
+        'luminosity': ' klux',
 }
 def unit(met):
 	global __units
 	return met in __units.keys() and __units[met] or ''
+
+def acumulate(name,met,data):
+	line = u'{}: '.format(met)
+	i = 0
+	while i<len(data):
+		d = data[i+1][1]-data[i][1]
+		line += u'{} mm a las {},'.format(d,data2fmt('%H:%M',data[i][0]))
+		i+=2
+	line += u'Total: {} mm en {} horas'.format(data[-1][1]-data[0][1],int(1+24*data[-1][0])-int(24*data[0][0]))
+	return line
 
 def analize(name,met,data):
 	line = u''
@@ -239,7 +270,7 @@ def analize(name,met,data):
 	l = u' Máximo {}{} el {} a las {}.'
 	#print [s,l,M,met,unit(met)]
 	l = l.format(M,unit(met).decode('utf-8'),s,data2fmt('%H:%M',t))
-        line+= l
+	line+= l
 
 	#print line
 	return line
@@ -267,6 +298,36 @@ def drawsimpleline(paper,begin,end,color=(0,0,0)):
 	p.lineTo(end[0],end[1])
 	paper.setStrokeColorRGB(r,g,b)
 	paper.drawPath(p)
+
+def normalize(data,fig):
+	mets = config.getlist(fig,'meters')
+	ans,larms = [],{}
+	for m in mets:
+		ins,met = m.split('.')
+		ins = int(ins)
+		if met[0] == '!':
+			larm = met[1:]
+			dx = []
+			for x in data['rel_alarmes']:
+				if x['id']==ins and x['descricao']==larm:
+					dx.append((x['dataInicio'],x['dataFim']))
+			dx.sort()
+			dl,j=[],0
+			for x in dx:
+				dl.append((x[0],j))
+				j+=1
+				dl.append((x[1],j))
+			larms[larm] = dx
+			
+			ans.append((m,dl))
+			print larms
+		else:
+			try:
+				dl = data['data'][ins][met]
+				ans.append((m,dl))
+			except:
+				print ins,met
+	return ans
 	
 def frontpage(paper,data):
 	global figdist,__totalpages;
@@ -279,16 +340,38 @@ def frontpage(paper,data):
 	d = [[] for i in range(n)]
 	for i in range(n):
 		name = config.get(figs[i],'description')
-		mets = config.getlist(figs[i],'meters')
-		for m in mets:
-			ins,met = m.split('.')
-			ins = int(ins)
-			try:
-        			dl = data['data'][ins][met]
-        			d[i].append((m,dl))
-        		except:
-                                print ins,met
-		figure(paper,name,d[i],dist2paper(dist[i]))
+		strx = config.get(figs[i],'stretch')
+		d[i] = normalize(data,figs[i])
+##		name = config.get(figs[i],'description')
+##		mets = config.getlist(figs[i],'meters')
+##		strx = config.get(figs[i],'stretch')
+##		larms = {}
+##		for m in mets:
+##			ins,met = m.split('.')
+##			ins = int(ins)
+##			if met[0] == '!':
+##                                larm = met[1:]
+##                                dx = []
+##                                for x in data['rel_alarmes']:
+##                                        if x['id']==ins and x['descricao']==larm:
+##                                                dx.append((x['dataInicio'],x['dataFim']))
+##                                dx.sort()
+##                                dl,j=[],0
+##                                for x in dx:
+##                                        dl.append((x[0],j))
+##                                        j+=1
+##                                        dl.append((x[1],j))
+##                                larms[larm] = dx
+##                                
+##                                d[i].append((m,dl))
+##                                print larms
+##                        else:
+##				try:
+##					dl = data['data'][ins][met]
+##					d[i].append((m,dl))
+##				except:
+##					print ins,met
+		figure(paper,name,d[i],dist2paper(dist[i]),strx)
 	frontpagetitle(paper,data)
 
 	offset = 360
@@ -305,15 +388,17 @@ def frontpage(paper,data):
 			ins,met = m.split('.')
 			ins = int(ins)
 			inn = config.get('Instrument {}'.format(ins),'description',name)
-			try:
-        			dl = data['data'][ins][met]
-        		except:
-                                continue
-			line = analize(inn,met,dl)
-			drawsimpleline(paper,(72,724-offset),(76,720-offset),figurecolors[j])
-			drawsimpleline(paper,(76,720-offset),(81,728-offset),figurecolors[j])
-			offset = drawline(paper,line,offset,left=84)
-			j += 1
+			dl = d[i][j][1]
+##			try:
+##				dl = data['data'][ins][met]
+##			except:
+##				continue
+			if met[0] != '!':
+				line = analize(inn,met,dl)
+				drawsimpleline(paper,(72,724-offset),(76,720-offset),figurecolors[j])
+				drawsimpleline(paper,(76,720-offset),(81,728-offset),figurecolors[j])
+				offset = drawline(paper,line,offset,left=84)
+				j += 1
 			
 
 def frontpagetitle(paper,data):
@@ -413,40 +498,42 @@ def report(docfn,data):
 	global __totalpages
 	paper = canvas.Canvas(docfn,pagesize=letter)
 	paper.setAuthor('Oruga Amarilla')
-        print 1
 	figs = config.getlist('Report','figures')
 	__totalpages += len(figs)
-        print 2
 	brand(paper)
-	print 3
 	frontpage(paper,data)
-	print 3,figs
 	site = config.get('Site','name')
 	for fig in figs:
 		paginate(paper)
 		brand(paper)
 		name = config.get(fig,'description')
 		mets = config.getlist(fig,'meters')
-		d = []
+		strx = config.get(fig,'stretch')
+		d = normalize(data,fig)
 		offset,j = 400,0
 		for m in mets:
 			ins,met = m.split('.')
 			ins = int(ins)
 			inn = config.get('Instrument {}'.format(ins),'description',name)
-			try:
-        			dl = data['data'][ins][met]
-        		except:
-                                continue
-			d.append((m,dl))
+			mets = config.checklist('Instrument {}'.format(ins),'meters',[])
+			txfs = config.checklist('Instrument {}'.format(ins),'transform',[])
+##			try:
+##				dl = data['data'][ins][met]
+##			except:
+##				continue
+##			d.append((m,dl))
 
-			line = analize(inn,met,dl)
+			if met[0]=='!':
+				line = acumulate(inn,'Lluvia',d[j][1])
+			else:
+				line = analize(inn,met,d[j][1])
 			drawsimpleline(paper,(72,724-offset),(76,720-offset),figurecolors[j])
 			drawsimpleline(paper,(76,720-offset),(81,728-offset),figurecolors[j])
 			offset = drawline(paper,line,offset,left=84)
 			j+= 1
 
 		otherpagetitle(paper,name,site)
-		figure(paper,name,d,(72,660,540,360))
+		figure(paper,name,d,(72,660,540,360),strx)
 
 	paginate(paper)
 	paper.save()

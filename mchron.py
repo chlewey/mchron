@@ -58,7 +58,7 @@ def main(debug=False):
 	""" Form the document """
 	docfn = "{}_{}.pdf".format(
 		config.get('Report','namebase','report'),
-		time2ymd(ntime))
+		time2fmt('%Y-%m-%d(%I%p)',ntime))
 	print docfn
 	#try:
 	report(docfn,d)

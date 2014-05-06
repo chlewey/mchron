@@ -101,7 +101,9 @@ class database:
 				for i,n in v:
 					d['data'][i] = {}
 					d['keys'][i] = []
-					config.check('Instrument {}'.format(i), 'type', table)
+					inst = 'Instrument {}'.format(i)
+					config.check(inst, 'type', table)
+					txfrms = config.checklist(inst, 'transform',[]) or [];
 					a,e = self.select(table,limit=n,where="data>{0} AND id={1}".format(stime,i),order='data')
 					g = a.index('data')
 					common, flags, keys = [], [], {}
@@ -117,8 +119,9 @@ class database:
 					meters = config.checklist(table, 'meters', common) or [];
 					config.checklist(table, 'flags', flags);
 					for j in range(len(meters)):
+                                                txf = txfrms and txfrms[j] or None
 						met = meters[j]
-						d['data'][i][met] = [(q[g],translatev(keys[met][1],q[keys[met][0]])) for q in e]
+						d['data'][i][met] = [(q[g],translatev(keys[met][1],q[keys[met][0]],txf)) for q in e]
 						d['keys'][i].append(met)
 
 					config.checklist('Instrument {}'.format(i), 'meters', meters, True)
@@ -217,6 +220,11 @@ def decimate(v):
 		return 0
 	return v/10.0
 
+def kilolux(v):
+        if not v:
+                return 0
+        return int(1000*(32+(v-80)*53.0/140))*0.001
+
 translations = {
 	'temperatura':('temperature',decimate),
 	'temperatura1':('temp_dry',decimate),
@@ -251,10 +259,13 @@ translations = {
 	'voltt': ('volt_T',None),
 	'modelo':('model',None),
 	'tipo':('type',None),
+        'klux':('luminosity',kilolux),
 	}
 
-def translatev(k,v):
+def translatev(k,v,o=None):
 	global translations
+	if o and o in translations.keys() and translations[o][1]:
+		return translations[o][1](v)
 	if k in translations.keys() and translations[k][1]:
 		return translations[k][1](v)
 	return v

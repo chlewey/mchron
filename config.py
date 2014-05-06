@@ -87,6 +87,7 @@ class mcConfig(ConfigParser.ConfigParser):
 		result = self.check(section, option, value, replace)
 		if type(result)==bool:
 			return result
+		if not result: return []
 		return result.split(';\n')
 		
 __config = None
