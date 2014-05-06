@@ -19,7 +19,6 @@ def resettime():
 	config.remove('Run','to')
 
 def setfromtime(n):
-##      print 'from:',[data2asc(q) for q in n]
 	ta = config.get('Run','from')
 	tf = ta and asc2data(ta)
 	if type(n) == list:
@@ -37,7 +36,6 @@ def setfromtime(n):
 	return m
 
 def settotime(n):
-##      print '  to:',[data2asc(q) for q in n]
 	ta = config.get('Run','to')
 	tt = ta and asc2data(ta)
 	if type(n) == list:
@@ -74,13 +72,10 @@ def figure(paper,name,data,coords,stretch=False):
 	paper.setFont('Helvetica-Bold',9)
 	x,y = lt+wd/2,tp+3
 	paper.drawCentredString(x,y,name)
-	#paper.rect(x-10,y,20,20)
-	#kk = [k[0] for k in data]
 	x0,x1=[],[]
 	y0,y1=[],[]
 	k0,gp=[],[]
 	for l in data:
-#		print type(l),type(l[0])
 		k1 = l[0][4:8]
 		ds = [q[0] for q in l[1]]
 		do = [q[1] for q in l[1]]
@@ -134,13 +129,11 @@ def figure(paper,name,data,coords,stretch=False):
 		rw,gw,bw = (1+r)/2,(1+g)/2,(1+b)/2
 		dd = l[1]
 		dy = y1[i]-y0[i]
-#		print dx,dy
 		fy = float(ht)/dy
 		p = paper.beginPath()
-		#p.moveTo(lt+(dd[0][0]-x0)*fx,bt+(dd[0][1]-y0[i])*fy)
 		qd = dd[0][0]-10*gp[i]
 		for q in dd:
-			if q[0]-qd > 2*gp[i]:
+			if q[0]-qd > 2*gp[i] or q[0]<qd:
 				p.moveTo(lt+(dd[0][0]-x0)*fx,bt+(dd[0][1]-y0[i])*fy)
 			else:
 				p.lineTo(lt+(q[0]-x0)*fx,bt+(q[1]-y0[i])*fy)
@@ -260,7 +253,6 @@ def analize(name,met,data):
 	t = dt[i]
 	s = data2fmt('%A %d',t)
 	l = u' Mínimo {}{} el {} a las {}.'
-	#print [line,s,l,m,met,unit(met)]
 	l = l.format(m,unit(met).decode('utf-8'),s,data2fmt('%H:%M',t))
 	line+= l
 	M = max(dv)
@@ -268,11 +260,9 @@ def analize(name,met,data):
 	t = dt[i]
 	s = data2fmt('%A %d',t)
 	l = u' Máximo {}{} el {} a las {}.'
-	#print [s,l,M,met,unit(met)]
 	l = l.format(M,unit(met).decode('utf-8'),s,data2fmt('%H:%M',t))
 	line+= l
 
-	#print line
 	return line
 
 def drawline(paper,line,offset=0,top=720,left=72):
@@ -320,7 +310,6 @@ def normalize(data,fig):
 			larms[larm] = dx
 			
 			ans.append((m,dl))
-			print larms
 		else:
 			try:
 				dl = data['data'][ins][met]
@@ -342,35 +331,6 @@ def frontpage(paper,data):
 		name = config.get(figs[i],'description')
 		strx = config.get(figs[i],'stretch')
 		d[i] = normalize(data,figs[i])
-##		name = config.get(figs[i],'description')
-##		mets = config.getlist(figs[i],'meters')
-##		strx = config.get(figs[i],'stretch')
-##		larms = {}
-##		for m in mets:
-##			ins,met = m.split('.')
-##			ins = int(ins)
-##			if met[0] == '!':
-##                                larm = met[1:]
-##                                dx = []
-##                                for x in data['rel_alarmes']:
-##                                        if x['id']==ins and x['descricao']==larm:
-##                                                dx.append((x['dataInicio'],x['dataFim']))
-##                                dx.sort()
-##                                dl,j=[],0
-##                                for x in dx:
-##                                        dl.append((x[0],j))
-##                                        j+=1
-##                                        dl.append((x[1],j))
-##                                larms[larm] = dx
-##                                
-##                                d[i].append((m,dl))
-##                                print larms
-##                        else:
-##				try:
-##					dl = data['data'][ins][met]
-##					d[i].append((m,dl))
-##				except:
-##					print ins,met
 		figure(paper,name,d[i],dist2paper(dist[i]),strx)
 	frontpagetitle(paper,data)
 
@@ -389,10 +349,6 @@ def frontpage(paper,data):
 			ins = int(ins)
 			inn = config.get('Instrument {}'.format(ins),'description',name)
 			dl = d[i][j][1]
-##			try:
-##				dl = data['data'][ins][met]
-##			except:
-##				continue
 			if met[0] != '!':
 				line = analize(inn,met,dl)
 				drawsimpleline(paper,(72,724-offset),(76,720-offset),figurecolors[j])
@@ -415,11 +371,7 @@ def frontpagetitle(paper,data):
 	paper.setTitle(title)
 	paper.setSubject('{}\n{}'.format(subtitle1,subtitle2))
 	paper.setFont('Helvetica-Bold',16)
-	#try:
 	paper.drawCentredString(306,720,title or 'Titulo')
-	#except:
-	#	print ('ERROR:', title)
-	#	config.save()
 	paper.setFont('Helvetica',11)
 	paper.drawCentredString(306,702,subtitle1)
 	paper.drawCentredString(306,686,subtitle2)
@@ -517,11 +469,6 @@ def report(docfn,data):
 			inn = config.get('Instrument {}'.format(ins),'description',name)
 			mets = config.checklist('Instrument {}'.format(ins),'meters',[])
 			txfs = config.checklist('Instrument {}'.format(ins),'transform',[])
-##			try:
-##				dl = data['data'][ins][met]
-##			except:
-##				continue
-##			d.append((m,dl))
 
 			if met[0]=='!':
 				line = acumulate(inn,'Lluvia',d[j][1])

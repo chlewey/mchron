@@ -63,7 +63,7 @@ def send(text,attch=[]):
 	msg['Date'] = formatdate(localtime=True)
 	msg['Subject'] = config.get('Email','subject',config.get('Report','title'))
 	
-	msgtext = MIMEText(text)
+	msgtext = MIMEText(text.encode('Latin-1'))
 	msg.attach(msgtext)
 	
 	for f in attch:

@@ -7,18 +7,12 @@ __sit_dshift = 25569
 __secday = 24*3600
 
 def __localein(l=__mylocale):
-        #print "Current locale: {} with {} encoding".format(
-        #                __mylocale or 'none',__locencod or 'no')
 	global __lstack,__mylocale,__locencod
 	if not __mylocale:
 		__mylocale = config.get('Database','locale','es_CO.utf8')
 		__locencod = config.get('Database','locale encoding')
-	#	print "Setting locale to {} with {} encoding".format(
-        #                __mylocale,__locencod or 'no')
 	if not l:
 		l = __mylocale
-	#	print "Setting locale to {} with {} encoding".format(
-        #               __mylocale,__locencod or 'no')
 	__lstack.append(locale.getlocale())
 	locale.setlocale(locale.LC_TIME,l)
 	return __locencod
@@ -77,7 +71,6 @@ def time2fmt(ft,t):
                 exit()
 	if le:
                 s = s.decode(le)
-                #print [le,s]
 	__localeout()
 	return s
 
@@ -100,4 +93,3 @@ def conf2time(sec,op,dt=False):
 	return asc2time(config.get(sec,op,df))
 
 locale.getlocale()
-#locale.setlocale(locale.LC_TIME,__mylocale)

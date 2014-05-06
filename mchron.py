@@ -9,7 +9,7 @@ import config
 
 CONFIGFILE = 'mchron.cfg'
 
-EMAILMSG = """
+EMAILMSG = u"""
 Este es un correo automámatico generado por el
 sistema de la Oruga Amarilla como reporte de
 actividad.
@@ -58,7 +58,7 @@ def main(debug=False):
 	""" Form the document """
 	docfn = "{}_{}.pdf".format(
 		config.get('Report','namebase','report'),
-		time2fmt('%Y-%m-%d(%I%p)',ntime))
+		time2fmt('%Y-%m-%d(%H)',ntime))
 	print docfn
 	#try:
 	report(docfn,d)
