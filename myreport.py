@@ -58,7 +58,7 @@ figurecolors = [
 	(0.4,0.8,0.0),
 	(0.4,0.0,0.8)]
 	
-def figure(paper,name,data,coords):
+def figure(paper,name,data,coords,stretch=False):
 	global figurecolors
 	lt,tp,rt,bt = coords
 	wd = rt-lt
@@ -76,7 +76,7 @@ def figure(paper,name,data,coords):
 	#kk = [k[0] for k in data]
 	x0,x1=[],[]
 	y0,y1=[],[]
-	k0 = []
+	k0,gp=[],[]
 	for l in data:
 #		print type(l),type(l[0])
 		k1 = l[0][4:8]
@@ -86,6 +86,7 @@ def figure(paper,name,data,coords):
 		x1.append(max(ds))
 		y0.append(int(min(do)))
 		y1.append(int(max(do)+1))
+		gp.append((x1[-1]-x0[-1])/len(ds))
 		if k1 in k0:
 			ix = k0.index(k1)
 			y0[-1] = min(y0[ix],y0[-1])
@@ -93,8 +94,12 @@ def figure(paper,name,data,coords):
 			y1[-1] = max(y1[ix],y1[-1])
 			y1[ix] = y1[-1]
 		k0.append(k1)
-	x0 = setfromtime(x0)
-	x1 = settotime(x1)
+	if stretch:
+		setfromtime(x0)
+		settotime(x1)
+	else:
+		x0 = setfromtime(x0)
+		x1 = settotime(x1)
 	dx = x1-x0
 	fx = float(wd)/dx
 
@@ -129,9 +134,14 @@ def figure(paper,name,data,coords):
 #		print dx,dy
 		fy = float(ht)/dy
 		p = paper.beginPath()
-		p.moveTo(lt+(dd[0][0]-x0)*fx,bt+(dd[0][1]-y0[i])*fy)
-		for q in dd[1:]:
-			p.lineTo(lt+(q[0]-x0)*fx,bt+(q[1]-y0[i])*fy)
+		#p.moveTo(lt+(dd[0][0]-x0)*fx,bt+(dd[0][1]-y0[i])*fy)
+		qd = dd[0][0]-10*gp
+		for q in dd:
+			if q[0]-qd > 2*gp:
+				p.moveTo(lt+(dd[0][0]-x0)*fx,bt+(dd[0][1]-y0[i])*fy)
+			else:
+				p.lineTo(lt+(q[0]-x0)*fx,bt+(q[1]-y0[i])*fy)
+			qd = q[0]
 			j+= 1
 		paper.setStrokeColorRGB(r,g,b)
 		paper.drawPath(p)
