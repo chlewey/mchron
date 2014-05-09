@@ -134,7 +134,8 @@ def figure(paper,name,data,coords,stretch=False):
 		qd = dd[0][0]-10*gp[i]
 		for q in dd:
 			if q[0]-qd > 2*gp[i] or q[0]<qd:
-				p.moveTo(lt+(dd[0][0]-x0)*fx,bt+(dd[0][1]-y0[i])*fy)
+				p.moveTo(lt+(q[0]-x0)*fx,bt+(q[1]-y0[i])*fy)
+				#p.moveTo(lt+(dd[0][0]-x0)*fx,bt+(dd[0][1]-y0[i])*fy)
 			else:
 				p.lineTo(lt+(q[0]-x0)*fx,bt+(q[1]-y0[i])*fy)
 			qd = q[0]
