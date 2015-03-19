@@ -79,6 +79,9 @@ def figure(paper,name,data,coords,stretch=False):
 		k1 = l[0][4:8]
 		ds = [q[0] for q in l[1]]
 		do = [q[1] for q in l[1]]
+		if not ds:
+			print l[0],'-',k1
+			continue
 		x0.append(min(ds))
 		x1.append(max(ds))
 		y0.append(int(min(do)))
@@ -91,6 +94,8 @@ def figure(paper,name,data,coords,stretch=False):
 			y1[-1] = max(y1[ix],y1[-1])
 			y1[ix] = y1[-1]
 		k0.append(k1)
+	if not x0:
+		return
 	if stretch:
 		setfromtime(x0)
 		settotime(x1)
